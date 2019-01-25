@@ -34,6 +34,7 @@ export default {
     //每次改变的时候就会计算
     unfinishedTodoNum() {
       return this.todos.filter(todo => !todo.completed).length;
+      console.log(this.todos);
     }
   },
   methods: {

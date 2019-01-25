@@ -2,6 +2,7 @@ import todo from './pages/todo/todo.vue';
 import VueRouter from 'vue-router';
 
 const routes = [
+    { path: '/', redirect: '/todo' },
     { path: '/todo', component: todo },
 ]
 

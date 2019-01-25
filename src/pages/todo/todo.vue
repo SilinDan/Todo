@@ -2,22 +2,29 @@
   <section class="real-app">
     <input
       type="text"
-      @keyup.enter="addTodo"
+      @keyup.enter="insertTodo"
       class="add-input"
       autofocus="autofocus"
       placeholder="还有什么要做的事情呢？"
     >
-    <Item :todo="todo" @del="deleteTodo" v-for="todo in filterTodos" :key="todo.id"/>
+    <Item
+      :todo="todo"
+      @del="spliceTodo"
+      v-for="todo in todoList"
+      :key="todo.id"
+      @edit="changeTodo"
+    />
     <Tabs
       :filter="filter"
       @toggle="toggleFilter"
       @clearAllCompeleted="clearAllCompeleted"
-      :todos="todos"
+      :todos="todoList"
     />
   </section>
 </template>
 
 <script>
+import { mapState, mapActions } from "vuex";
 import Item from "./components/item.vue";
 import Tabs from "./components/tabs.vue";
 
@@ -29,25 +36,29 @@ export default {
       filter: "all"
     };
   },
+  created() {
+    this.fetchTodoList();
+  },
   methods: {
-    getTodo() {
-      getAjaxListTodo();
+    ...mapActions("todoModules", {
+      fetchTodoList: "fetchTodoList", // 将 `this.add()` 映射为 `this.$store.dispatch('increment')`
+      addTodo: "addTodo",
+      deleteTodo: "deleteTodo",
+      editTodo: "editTodo"
+    }),
+
+    insertTodo(e) {
+      this.addTodo(e.target.value);
     },
-    addTodo(e) {
-      if (e.target.value == "") {
-        return false;
-      } else {
-        this.todos.unshift({
-          id: id++,
-          content: e.target.value.trim(), //trim()移除两侧空格
-          completed: false
-        }); //unshift插入在数组的第一项
-        e.target.value = "";
-      }
+    spliceTodo(id) {
+      this.deleteTodo(id);
     },
-    deleteTodo(id) {
-      //查找到todo.id等于接受的id的那条数据,删除1个节点
-      this.todos.splice(this.todos.findIndex(todo => todo.id === id), 1);
+    changeTodo(id, completed, content) {
+      let obj = {};
+      obj.id = id;
+      obj.completed = completed;
+      obj.content = content;
+      this.editTodo(obj);
     },
     toggleFilter(state) {
       this.filter = state;
@@ -57,6 +68,9 @@ export default {
     }
   },
   computed: {
+    ...mapState("todoModules", {
+      todoList: state => state.todoList
+    }),
     filterTodos() {
       if (this.filter == "all") {
         return this.todos;

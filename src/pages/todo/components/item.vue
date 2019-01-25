@@ -1,7 +1,6 @@
-
 <template>
   <div :class="['todo-item', todo.completed ? 'completed' : '']">
-    <input type="checkbox" class="toggle" v-model="todo.completed">
+    <input type="checkbox" class="toggle" v-model="todo.completed" @change="toggleCompleted">
     <label class="label">{{todo.content}}</label>
     <el-button class="alter" @click="alterTodo" title="编辑"></el-button>
     <button class="destory" @click="deleteTodo" title="删除"></button>
@@ -10,6 +9,7 @@
 
 
 <script>
+import { mapActions } from "vuex";
 export default {
   props: {
     todo: {
@@ -17,21 +17,28 @@ export default {
       required: true
     }
   },
+
   methods: {
+    ...mapActions("todoModules", {
+      editTodo: "editTodo"
+    }),
     deleteTodo() {
       this.$emit("del", this.todo.id); //用来触发事件
     },
+    toggleCompleted() {
+      this.$emit("edit", this.todo.id, this.todo.completed, this.todo.content);
+    },
     alterTodo() {
-      this.$prompt("请输入邮箱", "提示", {
+      this.$prompt("添加备注", "编辑", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
-        inputErrorMessage: "邮箱格式不正确"
+        // inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
+        inputErrorMessage: "添加失败"
       })
         .then(({ value }) => {
           this.$message({
             type: "success",
-            message: "你的邮箱是: " + value
+            message: "添加成功"
           });
         })
         .catch(() => {
@@ -46,7 +53,6 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-
 .todo-item {
   position: relative;
   background-color: #fff;
